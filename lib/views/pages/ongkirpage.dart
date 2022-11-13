@@ -20,6 +20,9 @@ class _OngkirPageState extends State<OngkirPage> {
   dynamic provId;
   dynamic provinceData;
   dynamic selectedProv;
+  dynamic provId2;
+  dynamic provinceData2;
+  dynamic selectedProv2;
   Future<List<Province>> getProvinces() async {
     dynamic listProvince;
     await MasterDataService.getProvince().then((value) {
@@ -35,7 +38,10 @@ class _OngkirPageState extends State<OngkirPage> {
   dynamic cityId;
   dynamic cityData;
   dynamic selectedCity;
-  Future<List<Province>> getCities(dynamic provId) async {
+  dynamic cityId2;
+  dynamic cityData2;
+  dynamic selectedCity2;
+  Future<List<City>> getCities(dynamic provId) async {
     dynamic listCity;
     await MasterDataService.getCity(provId).then((value) {
       setState(() {
@@ -49,6 +55,7 @@ class _OngkirPageState extends State<OngkirPage> {
   void initState() {
     super.initState();
     provinceData = getProvinces();
+    provinceData2 = getProvinces();
   }
 
   @override
@@ -121,42 +128,198 @@ class _OngkirPageState extends State<OngkirPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            FutureBuilder<List<Province>>(
-                              future: provinceData,
-                              builder: (context, snapshot) {
-                                if(snapshot.hasData){
-                                  return DropdownButton(
-                                    isExpanded: true,
-                                    value: selectedProv,
-                                    icon: const Icon(Icons.arrow_drop_down),
-                                    iconSize: 30,
-                                    elevation: 16,
-                                    style: TextStyle(color:Colors.black),
-                                    items: snapshot.data!.map<DropdownMenuItem<Province>>(
-                                      (Province value){
-                                        return DropdownMenuItem(
-                                          value: value,
-                                          child: Text(value.province.toString()),
-                                        );
+                            Container(
+                              width: 100,
+                              height: 50,
+                              child: FutureBuilder<List<Province>>(
+                                future: provinceData,
+                                builder: (context, snapshot) {
+                                  if(snapshot.hasData){
+                                    return DropdownButton(
+                                      hint: Text("Pilih Provinsi"),
+                                      isExpanded: true,
+                                      value: selectedProv,
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      iconSize: 30,
+                                      elevation: 16,
+                                      style: TextStyle(color:Colors.black),
+                                      items: snapshot.data!.map<DropdownMenuItem<Province>>(
+                                        (Province value){
+                                          return DropdownMenuItem(
+                                            value: value,
+                                            child: Text(value.province.toString()),
+                                          );
+                                        }
+                                      ).toList(),
+                                      onChanged: (newValue){
+                                        setState(() {
+                                          selectedProv = newValue;
+                                          provId = selectedProv.provinceId;
+                                          cityData = getCities(provId);
+                                        });
                                       }
-                                    ).toList(),
-                                    onChanged: (newValue){
-                                      setState(() {
-                                        selectedProv = newValue;
-                                        provId = selectedProv.provinceId;
-                                      });
-                                    }
-                                  );
-                                } else if (snapshot.hasError){
-                                  return Text('Tidak ada data!');
-                                }
+                                    );
+                                  } else if (snapshot.hasError){
+                                    return Text('Tidak ada data!');
+                                  }
 
-                                return UiLoading.loadingDD();
-                              },
-                            )
+                                  return UiLoading.loadingDD();
+                                },
+                              ),
+                            ),
+                            selectedProv == null ? 
+                              Text("Pilih Provinsi Terlebih Dahulu")
+                            : 
+                              Container(
+                              width: 100,
+                              height: 50,
+                              child: FutureBuilder<List<City>>(
+                                future: cityData,
+                                builder: (context, snapshot) {
+                                  if(snapshot.hasData){
+                                    return DropdownButton(
+                                      hint: Text("Pilih Kota"),
+                                      isExpanded: true,
+                                      value: selectedCity,
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      iconSize: 30,
+                                      elevation: 16,
+                                      style: TextStyle(color:Colors.black),
+                                      items: snapshot.data!.map<DropdownMenuItem<City>>(
+                                        (City value){
+                                          return DropdownMenuItem(
+                                            value: value,
+                                            child: Text(value.cityName.toString()),
+                                          );
+                                        }
+                                      ).toList(),
+                                      onChanged: (newValue){
+                                        setState(() {
+                                          selectedCity = newValue;
+                                          cityId = selectedCity.cityId;
+                                        });
+                                      }
+                                    );
+                                  } else if (snapshot.hasError){
+                                    return Text('Tidak ada data!');
+                                  }
+
+                                  return UiLoading.loadingDD();
+                                },
+                              ),
+                            ),
                           ],
                         ),
-                      )
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            "Destination",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 100,
+                              height: 50,
+                              child: FutureBuilder<List<Province>>(
+                                future: provinceData2,
+                                builder: (context, snapshot) {
+                                  if(snapshot.hasData){
+                                    return DropdownButton(
+                                      hint: Text("Pilih Provinsi"),
+                                      isExpanded: true,
+                                      value: selectedProv2,
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      iconSize: 30,
+                                      elevation: 16,
+                                      style: TextStyle(color:Colors.black),
+                                      items: snapshot.data!.map<DropdownMenuItem<Province>>(
+                                        (Province value){
+                                          return DropdownMenuItem(
+                                            value: value,
+                                            child: Text(value.province.toString()),
+                                          );
+                                        }
+                                      ).toList(),
+                                      onChanged: (newValue){
+                                        setState(() {
+                                          selectedProv2 = newValue;
+                                          provId2 = selectedProv2.provinceId;
+                                          cityData2 = getCities(provId2);
+                                        });
+                                      }
+                                    );
+                                  } else if (snapshot.hasError){
+                                    return Text('Tidak ada data!');
+                                  }
+
+                                  return UiLoading.loadingDD();
+                                },
+                              ),
+                            ),
+                            selectedProv2 == null ? 
+                              Text("Pilih Provinsi Terlebih Dahulu")
+                            : 
+                            Container(
+                              width: 100,
+                              height: 50,
+                              child: FutureBuilder<List<City>>(
+                                future: cityData2,
+                                builder: (context, snapshot) {
+                                  if(snapshot.hasData){
+                                    return DropdownButton(
+                                      hint: Text("Pilih Kota"),
+                                      isExpanded: true,
+                                      value: selectedCity2,
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      iconSize: 30,
+                                      elevation: 16,
+                                      style: TextStyle(color:Colors.black),
+                                      items: snapshot.data!.map<DropdownMenuItem<City>>(
+                                        (City value){
+                                          return DropdownMenuItem(
+                                            value: value,
+                                            child: Text(value.cityName.toString()),
+                                          );
+                                        }
+                                      ).toList(),
+                                      onChanged: (newValue){
+                                        setState(() {
+                                          selectedCity2 = newValue;
+                                          cityId2 = selectedCity2.cityId;
+                                        });
+                                      }
+                                    );
+                                  } else if (snapshot.hasError){
+                                    return Text('Tidak ada data!');
+                                  }
+
+                                  return UiLoading.loadingDD();
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Center(
+                              child: ElevatedButton(
+                                onPressed: (() {
+                                  if(selectedCity2 == null || selectedCity == null){
+                                    Fluttertoast.showToast(msg: "Data belum di isi!" );
+                                  } else {
+                                    Fluttertoast.showToast(msg: "Origin : " + selectedCity.cityName.toString() + ", Destination : " + selectedCity2.cityName.toString());
+                                  }
+                                }),
+                                child: Text("Hitung",style: TextStyle(fontSize: 16),)
+                              ),
+                            )
                     ],
                   ),
                 ),
