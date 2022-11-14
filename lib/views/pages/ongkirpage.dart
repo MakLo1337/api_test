@@ -14,6 +14,7 @@ class _OngkirPageState extends State<OngkirPage> {
   var kurir = [
     'jne','pos','tiki'
   ];
+  var selectedKurir = "";
 
   final ctrlBerat = TextEditingController();
 
@@ -51,16 +52,30 @@ class _OngkirPageState extends State<OngkirPage> {
 
     return listCity;
   }
+
+  List<Costs> listCosts = [];
+  Future<dynamic> getCostsData() async {
+    await RajaOngkirService.getMyOngkir(cityId, cityId2, int.parse(ctrlBerat.text) , selectedKurir).then((value) {
+      setState(() {
+        listCosts = value;
+        _isLoading = false;
+      });
+      print(listCosts.toString());
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     provinceData = getProvinces();
     provinceData2 = getProvinces();
+    selectedKurir = dropdowndefault;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Hitung Ongkir"),
         centerTitle: true,
@@ -74,7 +89,7 @@ class _OngkirPageState extends State<OngkirPage> {
               children: [
                 //Form Flexible
                 Flexible(
-                  flex: 2,
+                  flex: 3,
                   child: Column(
                     children: [
                       Padding(
@@ -94,6 +109,7 @@ class _OngkirPageState extends State<OngkirPage> {
                               onChanged: (String? newVal){
                                 setState(() {
                                   dropdowndefault = newVal!;
+                                  selectedKurir = newVal;
                                 });
                               }
                             ),
@@ -129,7 +145,7 @@ class _OngkirPageState extends State<OngkirPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Container(
-                              width: 100,
+                              width: 150,
                               height: 50,
                               child: FutureBuilder<List<Province>>(
                                 future: provinceData,
@@ -157,6 +173,9 @@ class _OngkirPageState extends State<OngkirPage> {
                                           provId = selectedProv.provinceId;
                                           cityData = getCities(provId);
                                         });
+                                        selectedCity = null;
+                                        cityData = getCities(provId);
+                                        cityId = null;
                                       }
                                     );
                                   } else if (snapshot.hasError){
@@ -171,7 +190,7 @@ class _OngkirPageState extends State<OngkirPage> {
                               Text("Pilih Provinsi Terlebih Dahulu")
                             : 
                               Container(
-                              width: 100,
+                              width: 150,
                               height: 50,
                               child: FutureBuilder<List<City>>(
                                 future: cityData,
@@ -226,7 +245,7 @@ class _OngkirPageState extends State<OngkirPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Container(
-                              width: 100,
+                              width: 150,
                               height: 50,
                               child: FutureBuilder<List<Province>>(
                                 future: provinceData2,
@@ -254,6 +273,9 @@ class _OngkirPageState extends State<OngkirPage> {
                                           provId2 = selectedProv2.provinceId;
                                           cityData2 = getCities(provId2);
                                         });
+                                        selectedCity2 = null;
+                                        cityData2 = getCities(provId2);
+                                        cityId2 = null;
                                       }
                                     );
                                   } else if (snapshot.hasError){
@@ -268,12 +290,12 @@ class _OngkirPageState extends State<OngkirPage> {
                               Text("Pilih Provinsi Terlebih Dahulu")
                             : 
                             Container(
-                              width: 100,
+                              width: 150,
                               height: 50,
                               child: FutureBuilder<List<City>>(
                                 future: cityData2,
-                                builder: (context, snapshot) {
-                                  if(snapshot.hasData){
+                                builder: (context, snapshot2) {
+                                  if(snapshot2.hasData){
                                     return DropdownButton(
                                       hint: Text("Pilih Kota"),
                                       isExpanded: true,
@@ -282,11 +304,11 @@ class _OngkirPageState extends State<OngkirPage> {
                                       iconSize: 30,
                                       elevation: 16,
                                       style: TextStyle(color:Colors.black),
-                                      items: snapshot.data!.map<DropdownMenuItem<City>>(
-                                        (City value){
+                                      items: snapshot2.data!.map<DropdownMenuItem<City>>(
+                                        (City value2){
                                           return DropdownMenuItem(
-                                            value: value,
-                                            child: Text(value.cityName.toString()),
+                                            value: value2,
+                                            child: Text(value2.cityName.toString()),
                                           );
                                         }
                                       ).toList(),
@@ -294,10 +316,11 @@ class _OngkirPageState extends State<OngkirPage> {
                                         setState(() {
                                           selectedCity2 = newValue;
                                           cityId2 = selectedCity2.cityId;
+                                          print(cityId2);
                                         });
                                       }
                                     );
-                                  } else if (snapshot.hasError){
+                                  } else if (snapshot2.hasError){
                                     return Text('Tidak ada data!');
                                   }
 
@@ -308,18 +331,27 @@ class _OngkirPageState extends State<OngkirPage> {
                           ],
                         ),
                       ),
-                      Center(
-                              child: ElevatedButton(
-                                onPressed: (() {
-                                  if(selectedCity2 == null || selectedCity == null){
-                                    Fluttertoast.showToast(msg: "Data belum di isi!" );
-                                  } else {
-                                    Fluttertoast.showToast(msg: "Origin : " + selectedCity.cityName.toString() + ", Destination : " + selectedCity2.cityName.toString());
-                                  }
-                                }),
-                                child: Text("Hitung",style: TextStyle(fontSize: 16),)
-                              ),
-                            )
+                      Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Center(
+                          child: ElevatedButton(
+                            onPressed: (() {
+                              if(cityId.isEmpty || cityId2.isEmpty || selectedKurir.isEmpty || ctrlBerat.text.isEmpty ){
+                                UiToast.toastErr("Semua field harus di isi !");
+                                // Fluttertoast.showToast(msg: "Semua field harus di isi !" );
+                              } else {
+                                setState(() {
+                                  _isLoading = true;
+                                });
+                                getCostsData();
+                                // UiToast.toastOk("SIAP LANJUT!");
+                                // Fluttertoast.showToast(msg: "Origin : " + selectedCity.cityName.toString() + ", Destination : " + selectedCity2.cityName.toString());
+                              }
+                            }),
+                            child: Text("Hitung",style: TextStyle(fontSize: 16),)
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -327,7 +359,26 @@ class _OngkirPageState extends State<OngkirPage> {
                 //Flexible for showing data
                 Flexible(
                   flex: 2,
-                  child: Container(),
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: listCosts.isEmpty ? 
+                    const Align(
+                      alignment: Alignment.center,
+                      child: Text("Tidak ada data"),
+                    ) : ListView.builder(
+                      itemCount: listCosts.length,
+                      itemBuilder: (context, index) {
+                        return LazyLoadingList(
+                          initialSizeOfItems: 10,
+                          loadMore: (){},
+                          child: CardOngkir(listCosts[index]),
+                          index: index,
+                          hasMore: true,
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ],
             ),
